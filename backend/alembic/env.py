@@ -83,7 +83,13 @@ async def run_async_migrations() -> None:
         poolclass=pool.NullPool,
     )
 
+    from sqlalchemy import text
+
     async with connectable.connect() as connection:
+        # Enable PostGIS extension for geometry types
+        await connection.execute(text("CREATE EXTENSION IF NOT EXISTS postgis;"))
+        # Enable pgvector extension for embedding types
+        await connection.execute(text("CREATE EXTENSION IF NOT EXISTS vector;"))
         await connection.run_sync(do_run_migrations)
 
     await connectable.dispose()
