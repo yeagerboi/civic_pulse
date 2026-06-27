@@ -11,7 +11,14 @@ async def main():
     if not DB_URL:
         print("Error: DB_URL environment variable not set.")
         return
-    engine = create_async_engine(DB_URL)
+        
+    db_url = DB_URL
+    if db_url.startswith("postgresql://"):
+        db_url = db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+    if "sslmode=" in db_url:
+        db_url = db_url.replace("sslmode=", "ssl=")
+        
+    engine = create_async_engine(db_url)
     async with engine.begin() as conn:
         try:
             await conn.execute(text("ALTER TABLE users ADD COLUMN hashed_password VARCHAR;"))

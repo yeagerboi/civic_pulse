@@ -24,7 +24,13 @@ from app.core.config import settings
 from app.db.base import Base
 import app.models  # ensure models are loaded
 
-config.set_main_option("sqlalchemy.url", settings.DB_URL)
+db_url = settings.DB_URL
+if db_url and db_url.startswith("postgresql://"):
+    db_url = db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+if db_url and "sslmode=" in db_url:
+    db_url = db_url.replace("sslmode=", "ssl=")
+
+config.set_main_option("sqlalchemy.url", db_url)
 
 target_metadata = Base.metadata
 
